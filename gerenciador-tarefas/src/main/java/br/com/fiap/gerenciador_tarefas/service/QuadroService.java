@@ -1,8 +1,12 @@
-package com.gerenciadortarefas.service;
+package br.com.fiap.gerenciador_tarefas.service;
+
+import br.com.fiap.gerenciador_tarefas.repository.QuadroRepository;
+import br.com.fiap.gerenciador_tarefas.service.ListaService;
 
 import com.gerenciadortarefas.dto.QuadroDTO;
-import com.gerenciadortarefas.models.Quadro;
-import com.gerenciadortarefas.repository.QuadroRepository;
+import br.com.fiap.gerenciador_tarefas.models.Quadro;
+import br.com.fiap.gerenciador_tarefas.repository.QuadroRepository;
+import br.com.fiap.gerenciador_tarefas.service.ListaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

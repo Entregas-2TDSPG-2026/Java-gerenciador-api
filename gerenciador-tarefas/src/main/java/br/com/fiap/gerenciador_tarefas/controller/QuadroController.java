@@ -1,7 +1,7 @@
-package com.gerenciadortarefas.controller;
+package br.com.fiap.gerenciador_tarefas.controller;
 
-import com.gerenciadortarefas.dto.QuadroDTO;
-import com.gerenciadortarefas.service.QuadroService;
+import br.com.fiap.gerenciador_tarefas.dto.QuadroDTO;
+import br.com.fiap.gerenciador_tarefas.service.QuadroService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -1,6 +1,6 @@
-package com.gerenciadortarefas.dto;
+package br.com.fiap.gerenciador_tarefas.dto;
 
-import com.gerenciadortarefas.models.Quadro;
+import br.com.fiap.gerenciador_tarefas.models.Quadro;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

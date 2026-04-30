@@ -1,7 +1,7 @@
-package com.gerenciadortarefas.dto;
+package br.com.fiap.gerenciador_tarefas.dto;
 
-import com.gerenciadortarefas.models.Tarefa;
-import com.gerenciadortarefas.validation.PrioridadeValida;
+import br.com.fiap.gerenciador_tarefas.models.Tarefa;
+import br.com.fiap.gerenciador_tarefas.validation.PrioridadeValida;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

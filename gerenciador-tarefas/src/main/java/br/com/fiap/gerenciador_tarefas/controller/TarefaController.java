@@ -1,8 +1,8 @@
-package com.gerenciadortarefas.controller;
+package br.com.fiap.gerenciador_tarefas.controller;
 
-import com.gerenciadortarefas.dto.TarefaDTO;
-import com.gerenciadortarefas.models.Tarefa;
-import com.gerenciadortarefas.service.TarefaService;
+import br.com.fiap.gerenciador_tarefas.dto.TarefaDTO;
+import br.com.fiap.gerenciador_tarefas.models.Tarefa;
+import br.com.fiap.gerenciador_tarefas.service.TarefaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
