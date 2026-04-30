@@ -1,7 +1,7 @@
-package br.com.fiap.gerenciador_tarefas.controller;
+package com.gerenciadortarefas.controller;
 
-import br.com.fiap.gerenciador_tarefas.dto.QuadroDTO;
-import br.com.fiap.gerenciador_tarefas.service.QuadroService;
+import com.gerenciadortarefas.dto.QuadroDTO;
+import com.gerenciadortarefas.service.QuadroService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,11 +26,18 @@ public class QuadroController {
             @RequestParam(defaultValue = "criadoEm") String ordenar,
             @RequestParam(defaultValue = "DESC")     String direcao
     ) {
-        Sort sort = direcao.equalsIgnoreCase("ASC")
-                ? Sort.by(ordenar).ascending()
-                : Sort.by(ordenar).descending();
+        Sort sort = direcao.equalsIgnoreCase("ASC") ? Sort.by(ordenar).ascending() : Sort.by(ordenar).descending();
         Pageable pageable = PageRequest.of(pagina, tamanho, sort);
         return ResponseEntity.ok(quadroService.listarTodos(pageable));
+    }
+
+    @GetMapping("/resumo")
+    public ResponseEntity<Page<QuadroDTO.Resumo>> listarResumo(
+            @RequestParam(defaultValue = "0")  int pagina,
+            @RequestParam(defaultValue = "10") int tamanho
+    ) {
+        Pageable pageable = PageRequest.of(pagina, tamanho);
+        return ResponseEntity.ok(quadroService.listarResumo(pageable));
     }
 
     @GetMapping("/buscar")
@@ -48,10 +55,13 @@ public class QuadroController {
         return ResponseEntity.ok(quadroService.buscarPorId(id));
     }
 
+    @GetMapping("/{id}/resumo")
+    public ResponseEntity<QuadroDTO.Resumo> buscarResumo(@PathVariable Long id) {
+        return ResponseEntity.ok(quadroService.buscarResumo(id));
+    }
+
     @PostMapping
-    public ResponseEntity<QuadroDTO.Resposta> criar(
-            @Valid @RequestBody QuadroDTO.Requisicao requisicao
-    ) {
+    public ResponseEntity<QuadroDTO.Resposta> criar(@Valid @RequestBody QuadroDTO.Requisicao requisicao) {
         return ResponseEntity.status(HttpStatus.CREATED).body(quadroService.criar(requisicao));
     }
 
