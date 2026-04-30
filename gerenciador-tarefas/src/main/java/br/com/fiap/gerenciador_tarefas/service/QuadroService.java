@@ -3,7 +3,7 @@ package br.com.fiap.gerenciador_tarefas.service;
 import br.com.fiap.gerenciador_tarefas.repository.QuadroRepository;
 import br.com.fiap.gerenciador_tarefas.service.ListaService;
 
-import com.gerenciadortarefas.dto.QuadroDTO;
+import br.com.fiap.gerenciador_tarefas.dto.QuadroDTO;
 import br.com.fiap.gerenciador_tarefas.models.Quadro;
 import br.com.fiap.gerenciador_tarefas.repository.QuadroRepository;
 import br.com.fiap.gerenciador_tarefas.service.ListaService;
