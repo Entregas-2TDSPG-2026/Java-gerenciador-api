@@ -1,10 +1,10 @@
-package br.com.fiap.gerenciador_tarefas.service;
+package com.gerenciadortarefas.service;
 
-import br.com.fiap.gerenciador_tarefas.dto.TarefaDTO;
-import br.com.fiap.gerenciador_tarefas.models.ListaTarefas;
-import br.com.fiap.gerenciador_tarefas.models.Tarefa;
-import br.com.fiap.gerenciador_tarefas.repository.ListaRepository;
-import br.com.fiap.gerenciador_tarefas.repository.TarefaRepository;
+import com.gerenciadortarefas.dto.TarefaDTO;
+import com.gerenciadortarefas.models.ListaTarefas;
+import com.gerenciadortarefas.models.Tarefa;
+import com.gerenciadortarefas.repository.ListaRepository;
+import com.gerenciadortarefas.repository.TarefaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +25,11 @@ public class TarefaService {
     @Transactional(readOnly = true)
     public Page<TarefaDTO.Resposta> listarTodas(Pageable pageable) {
         return tarefaRepository.findAll(pageable).map(TarefaDTO.Resposta::fromEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TarefaDTO.Resumo> listarResumo(Pageable pageable) {
+        return tarefaRepository.findAll(pageable).map(TarefaDTO.Resumo::fromEntity);
     }
 
     @Transactional(readOnly = true)
@@ -79,7 +84,7 @@ public class TarefaService {
         Tarefa tarefa = Tarefa.builder()
                 .titulo(requisicao.getTitulo())
                 .descricao(requisicao.getDescricao())
-                .prioridade(requisicao.getPrioridade())
+                .prioridade(Tarefa.Prioridade.valueOf(requisicao.getPrioridade().toUpperCase()))
                 .prazo(requisicao.getPrazo())
                 .lista(lista)
                 .build();
@@ -94,7 +99,7 @@ public class TarefaService {
                         "Lista não encontrada com id: " + requisicao.getListaId()));
         tarefa.setTitulo(requisicao.getTitulo());
         tarefa.setDescricao(requisicao.getDescricao());
-        tarefa.setPrioridade(requisicao.getPrioridade());
+        tarefa.setPrioridade(Tarefa.Prioridade.valueOf(requisicao.getPrioridade().toUpperCase()));
         tarefa.setPrazo(requisicao.getPrazo());
         tarefa.setLista(lista);
         return TarefaDTO.Resposta.fromEntity(tarefaRepository.save(tarefa));
