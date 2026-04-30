@@ -1,6 +1,6 @@
-package br.com.fiap.gerenciador_tarefas.dto;
+package com.gerenciadortarefas.dto;
 
-import br.com.fiap.gerenciador_tarefas.models.Quadro;
+import com.gerenciadortarefas.models.Quadro;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -43,7 +43,6 @@ public class QuadroDTO {
             int totalTarefas = quadro.getListas().stream()
                     .mapToInt(l -> l.getTarefas().size())
                     .sum();
-
             return Resposta.builder()
                     .id(quadro.getId())
                     .nome(quadro.getNome())
@@ -75,6 +74,37 @@ public class QuadroDTO {
                     .listas(quadro.getListas().stream()
                             .map(ListaDTO.Resposta::fromEntity)
                             .toList())
+                    .build();
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Resumo {
+        private Long id;
+        private String nome;
+        private int totalListas;
+        private int totalTarefas;
+        private long tarefasConcluidas;
+        private long tarefasPendentes;
+
+        public static Resumo fromEntity(Quadro quadro) {
+            long concluidas = quadro.getListas().stream()
+                    .flatMap(l -> l.getTarefas().stream())
+                    .filter(t -> t.isConcluida())
+                    .count();
+            int total = quadro.getListas().stream()
+                    .mapToInt(l -> l.getTarefas().size())
+                    .sum();
+            return Resumo.builder()
+                    .id(quadro.getId())
+                    .nome(quadro.getNome())
+                    .totalListas(quadro.getListas().size())
+                    .totalTarefas(total)
+                    .tarefasConcluidas(concluidas)
+                    .tarefasPendentes(total - concluidas)
                     .build();
         }
     }
