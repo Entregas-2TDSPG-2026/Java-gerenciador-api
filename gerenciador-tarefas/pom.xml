@@ -12,8 +12,8 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.gerenciadortarefas</groupId>
-    <artifactId>gerenciador-tarefas</artifactId>
+    <groupId>br.com.fiap.gerenciador_tarefas</groupId>
+    <artifactId>br.com.fiap.gerenciador_tarefas</artifactId>
     <version>1.0.0</version>
     <name>gerenciador-tarefas</name>
     <description>Sistema de Gerenciamento de Tarefas estilo Trello</description>
