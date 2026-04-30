@@ -1,8 +1,8 @@
-package br.com.fiap.gerenciador_tarefas.service;
+package com.gerenciadortarefas.service;
 
-import br.com.fiap.gerenciador_tarefas.dto.QuadroDTO;
-import br.com.fiap.gerenciador_tarefas.models.Quadro;
-import br.com.fiap.gerenciador_tarefas.repository.QuadroRepository;
+import com.gerenciadortarefas.dto.QuadroDTO;
+import com.gerenciadortarefas.models.Quadro;
+import com.gerenciadortarefas.repository.QuadroRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +22,11 @@ public class QuadroService {
     }
 
     @Transactional(readOnly = true)
+    public Page<QuadroDTO.Resumo> listarResumo(Pageable pageable) {
+        return quadroRepository.findAll(pageable).map(QuadroDTO.Resumo::fromEntity);
+    }
+
+    @Transactional(readOnly = true)
     public Page<QuadroDTO.Resposta> buscarPorNome(String nome, Pageable pageable) {
         return quadroRepository.findByNomeContainingIgnoreCase(nome, pageable)
                 .map(QuadroDTO.Resposta::fromEntity);
@@ -30,6 +35,11 @@ public class QuadroService {
     @Transactional(readOnly = true)
     public QuadroDTO.RespostaCompleta buscarPorId(Long id) {
         return QuadroDTO.RespostaCompleta.fromEntity(buscarOuLancarExcecao(id));
+    }
+
+    @Transactional(readOnly = true)
+    public QuadroDTO.Resumo buscarResumo(Long id) {
+        return QuadroDTO.Resumo.fromEntity(buscarOuLancarExcecao(id));
     }
 
     @Transactional
