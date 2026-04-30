@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tarefas</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --bg:        #0e0f11;
+          --surface:   #16181c;
+          --card:      #1c1f25;
+          --border:    rgba(255,255,255,0.07);
+          --border-hi: rgba(255,255,255,0.14);
+          --text:      #e8eaf0;
+          --muted:     #7a7f8e;
+          --accent:    #5b6ef5;
+          --accent-lo: rgba(91,110,245,0.12);
+          --green:     #3ecf6e;
+          --green-lo:  rgba(62,207,110,0.12);
+          --amber:     #f59e0b;
+          --amber-lo:  rgba(245,158,11,0.12);
+          --red:       #f06060;
+          --red-lo:    rgba(240,96,96,0.12);
+          --radius:    12px;
+          --radius-sm: 7px;
+          --shadow:    0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        body {
+          font-family: 'DM Sans', sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          min-height: 100vh;
+          overflow-x: hidden;
+        }
+
+        /* ── HEADER ── */
+        header {
+          position: sticky; top: 0; z-index: 100;
+          background: rgba(14,15,17,0.85);
+          backdrop-filter: blur(16px);
+          border-bottom: 1px solid var(--border);
+          padding: 0 2rem;
+          height: 60px;
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo {
+          display: flex; align-items: center; gap: 10px;
+          font-size: 18px; font-weight: 600; letter-spacing: -0.3px;
+        }
+        .logo-icon {
+          width: 30px; height: 30px; border-radius: 8px;
+          background: var(--accent);
+          display: grid; place-items: center;
+        }
+        .logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+        .header-actions { display: flex; gap: 10px; }
+
+        /* ── BUTTONS ── */
+        .btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 16px; border-radius: var(--radius-sm);
+          font-family: inherit; font-size: 13px; font-weight: 500;
+          cursor: pointer; border: none; transition: all 0.15s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #6b7ef8; }
+        .btn-ghost {
+          background: transparent; color: var(--muted);
+          border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { border-color: var(--border-hi); color: var(--text); }
+        .btn-danger { background: var(--red-lo); color: var(--red); border: 1px solid rgba(240,96,96,0.2); }
+        .btn-danger:hover { background: rgba(240,96,96,0.2); }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .btn svg { width: 14px; height: 14px; }
+
+        /* ── LAYOUT ── */
+        .app { display: flex; height: calc(100vh - 60px); }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+          width: 260px; min-width: 260px;
+          background: var(--surface);
+          border-right: 1px solid var(--border);
+          display: flex; flex-direction: column;
+          padding: 1.25rem 0;
+          overflow-y: auto;
+        }
+        .sidebar-label {
+          font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+          color: var(--muted); text-transform: uppercase;
+          padding: 0 1.25rem; margin-bottom: 8px;
+        }
+        .board-item {
+          display: flex; align-items: center; gap: 10px;
+          padding: 9px 1.25rem; cursor: pointer;
+          border-left: 3px solid transparent;
+          transition: all 0.12s; font-size: 14px;
+        }
+        .board-item:hover { background: rgba(255,255,255,0.04); }
+        .board-item.active {
+          background: var(--accent-lo);
+          border-left-color: var(--accent);
+          color: #a0aaff;
+        }
+        .board-dot {
+          width: 8px; height: 8px; border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .board-count {
+          margin-left: auto; font-size: 11px; font-family: 'DM Mono', monospace;
+          color: var(--muted);
+        }
+        .board-item-actions {
+          margin-left: auto;
+          display: none; gap: 2px;
+        }
+        .board-item:hover .board-item-actions { display: flex; }
+        .board-nome { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .icon-btn-danger:hover { background: var(--red-lo) !important; color: var(--red) !important; }
+        .sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+        .sidebar-new {
+          margin: 0 1rem;
+          padding: 9px 12px;
+          border-radius: var(--radius-sm);
+          border: 1px dashed var(--border-hi);
+          background: transparent;
+          color: var(--muted); font-size: 13px;
+          cursor: pointer; width: calc(100% - 2rem);
+          font-family: inherit;
+          display: flex; align-items: center; gap: 8px;
+          transition: all 0.15s;
+        }
+        .sidebar-new:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── BOARD AREA ── */
+        .board-area {
+          flex: 1; overflow-x: auto; overflow-y: hidden;
+          padding: 1.5rem;
+          display: flex; align-items: flex-start; gap: 1rem;
+        }
+
+        /* ── LISTA (coluna) ── */
+        .lista-col {
+          width: 290px; min-width: 290px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          display: flex; flex-direction: column;
+          max-height: calc(100vh - 130px);
+        }
+        .lista-header {
+          padding: 14px 16px 10px;
+          display: flex; align-items: center; justify-content: space-between;
+          border-bottom: 1px solid var(--border);
+        }
+        .lista-title {
+          font-size: 13px; font-weight: 600;
+          display: flex; align-items: center; gap: 8px;
+        }
+        .lista-badge {
+          background: rgba(255,255,255,0.07);
+          color: var(--muted);
+          font-size: 11px; font-family: 'DM Mono', monospace;
+          padding: 2px 7px; border-radius: 20px;
+        }
+        .lista-actions { display: flex; gap: 4px; }
+        .icon-btn {
+          width: 26px; height: 26px; border-radius: 6px;
+          border: none; background: transparent; color: var(--muted);
+          cursor: pointer; display: grid; place-items: center;
+          transition: all 0.12s;
+        }
+        .icon-btn:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+        .icon-btn svg { width: 14px; height: 14px; }
+
+        .tarefas-list {
+          padding: 10px; overflow-y: auto;
+          flex: 1; display: flex; flex-direction: column; gap: 8px;
+        }
+        .lista-footer { padding: 8px 10px; border-top: 1px solid var(--border); }
+
+        /* ── TAREFA CARD ── */
+        .tarefa-card {
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          padding: 12px;
+          cursor: pointer; transition: all 0.12s;
+          position: relative;
+        }
+        .tarefa-card:hover {
+          border-color: var(--border-hi);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow);
+        }
+        .tarefa-card.concluida { opacity: 0.5; }
+        .tarefa-card.concluida .tarefa-titulo { text-decoration: line-through; }
+        .prioridade-bar {
+          position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        }
+        .prioridade-bar.ALTA { background: var(--red); }
+        .prioridade-bar.MEDIA { background: var(--amber); }
+        .prioridade-bar.BAIXA { background: var(--green); }
+        .tarefa-titulo {
+          font-size: 13px; font-weight: 500; margin-top: 4px; line-height: 1.4;
+        }
+        .tarefa-desc {
+          font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4;
+          overflow: hidden; text-overflow: ellipsis;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        .tarefa-footer {
+          display: flex; align-items: center; justify-content: space-between;
+          margin-top: 10px;
+        }
+        .tarefa-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+        .tag {
+          font-size: 11px; padding: 2px 8px; border-radius: 20px;
+          font-weight: 500;
+        }
+        .tag-ALTA { background: var(--red-lo); color: var(--red); }
+        .tag-MEDIA { background: var(--amber-lo); color: var(--amber); }
+        .tag-BAIXA { background: var(--green-lo); color: var(--green); }
+        .tag-done { background: rgba(255,255,255,0.06); color: var(--muted); }
+        .prazo {
+          font-size: 11px; color: var(--muted);
+          display: flex; align-items: center; gap: 4px;
+          font-family: 'DM Mono', monospace;
+        }
+        .prazo.atrasado { color: var(--red); }
+        .prazo svg { width: 11px; height: 11px; }
+
+        /* ── NOVA COLUNA ── */
+        .nova-lista-col {
+          width: 260px; min-width: 260px;
+          border: 1px dashed var(--border-hi);
+          border-radius: var(--radius);
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          gap: 8px; cursor: pointer;
+          min-height: 120px;
+          color: var(--muted); font-size: 13px;
+          transition: all 0.15s;
+        }
+        .nova-lista-col:hover { border-color: var(--accent); color: var(--accent); }
+        .nova-lista-col svg { width: 20px; height: 20px; }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+          display: none; position: fixed; inset: 0; z-index: 200;
+          background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+          align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+          background: var(--surface);
+          border: 1px solid var(--border-hi);
+          border-radius: var(--radius);
+          padding: 28px;
+          width: 440px; max-width: 95vw;
+          box-shadow: var(--shadow);
+          animation: slideUp 0.18s ease;
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+        .modal-close {
+          position: absolute; right: 16px; top: 16px;
+        }
+
+        /* ── FORM ── */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+          display: block; font-size: 12px; font-weight: 500;
+          color: var(--muted); margin-bottom: 6px;
+          text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .form-input, .form-select, .form-textarea {
+          width: 100%; padding: 10px 12px;
+          background: var(--card); color: var(--text);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          font-family: inherit; font-size: 14px;
+          transition: border 0.12s;
+          outline: none;
+        }
+        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+          border-color: var(--accent);
+        }
+        .form-select option { background: var(--card); }
+
+        /* ── TOAST ── */
+        .toast-container {
+          position: fixed; bottom: 24px; right: 24px; z-index: 300;
+          display: flex; flex-direction: column; gap: 8px;
+        }
+        .toast {
+          padding: 12px 18px; border-radius: var(--radius-sm);
+          font-size: 13px; font-weight: 500;
+          animation: toastIn 0.2s ease;
+          display: flex; align-items: center; gap: 10px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateX(20px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .toast-success { background: #1a2e22; border: 1px solid rgba(62,207,110,0.3); color: var(--green); }
+        .toast-error   { background: #2e1a1a; border: 1px solid rgba(240,96,96,0.3); color: var(--red); }
+        .toast-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+          text-align: center; padding: 32px 16px;
+          color: var(--muted); font-size: 13px;
+        }
+        .empty-state svg { width: 32px; height: 32px; margin-bottom: 10px; opacity: 0.3; }
+
+        /* ── LOADING ── */
+        .spinner {
+          width: 20px; height: 20px; border-radius: 50%;
+          border: 2px solid var(--border-hi);
+          border-top-color: var(--accent);
+          animation: spin 0.7s linear infinite;
+          margin: 40px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── TAREFA DETAIL (modal) ── */
+        .detail-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .detail-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+        .detail-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 10px 0; border-bottom: 1px solid var(--border);
+          font-size: 13px;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-key { color: var(--muted); }
+
+        /* ── FILTER BAR ── */
+        .filter-bar {
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 1.5rem;
+          border-bottom: 1px solid var(--border);
+          background: var(--surface);
+        }
+        .filter-bar input {
+          flex: 1; max-width: 280px;
+          padding: 7px 12px;
+          background: var(--card); color: var(--text);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          font-family: inherit; font-size: 13px; outline: none;
+        }
+        .filter-bar input:focus { border-color: var(--accent); }
+        .filter-select {
+          padding: 7px 12px;
+          background: var(--card); color: var(--text);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          font-family: inherit; font-size: 13px; outline: none; cursor: pointer;
+        }
+        .filter-select option { background: var(--card); }
+
+        /* ── MAIN WRAPPER ── */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="logo">
+        <div class="logo-icon">
+            <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg>
+        </div>
+        Tarefas
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-ghost" onclick="abrirFiltros()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 4h18M7 10h10M11 16h2"/></svg>
+            Filtrar
+        </button>
+        <button class="btn btn-primary" onclick="abrirModalQuadro()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Novo quadro
+        </button>
+    </div>
+</header>
+
+<div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-label">Quadros</div>
+        <div id="quadro-list"></div>
+        <hr class="sidebar-divider" />
+        <button class="sidebar-new" onclick="abrirModalQuadro()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Novo quadro
+        </button>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-wrapper">
+        <div class="filter-bar" id="filter-bar" style="display:none">
+            <input type="text" id="search-input" placeholder="Buscar tarefa..." oninput="aplicarFiltros()" />
+            <select class="filter-select" id="filtro-prioridade" onchange="aplicarFiltros()">
+                <option value="">Prioridade</option>
+                <option value="ALTA">Alta</option>
+                <option value="MEDIA">Média</option>
+                <option value="BAIXA">Baixa</option>
+            </select>
+            <select class="filter-select" id="filtro-status" onchange="aplicarFiltros()">
+                <option value="">Status</option>
+                <option value="false">Em aberto</option>
+                <option value="true">Concluída</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="limparFiltros()">Limpar</button>
+        </div>
+        <div class="board-area" id="board-area">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- MODAL QUADRO -->
+<div class="modal-overlay" id="modal-quadro">
+    <div class="modal">
+        <div class="modal-title" id="modal-quadro-title">Novo quadro</div>
+        <div class="form-group">
+            <label class="form-label">Nome</label>
+            <input class="form-input" id="quadro-nome" placeholder="Ex: Projeto Final" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Descrição</label>
+            <input class="form-input" id="quadro-desc" placeholder="Opcional..." />
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="fecharModal('modal-quadro')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarQuadro()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LISTA -->
+<div class="modal-overlay" id="modal-lista">
+    <div class="modal">
+        <div class="modal-title">Nova lista</div>
+        <div class="form-group">
+            <label class="form-label">Nome</label>
+            <input class="form-input" id="lista-nome" placeholder="Ex: A Fazer" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Posição</label>
+            <input class="form-input" type="number" id="lista-posicao" value="1" min="1" />
+        </div>
+        <input type="hidden" id="lista-quadro-id" />
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="fecharModal('modal-lista')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarLista()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL TAREFA -->
+<div class="modal-overlay" id="modal-tarefa">
+    <div class="modal">
+        <div class="modal-title" id="modal-tarefa-title">Nova tarefa</div>
+        <div class="form-group">
+            <label class="form-label">Título</label>
+            <input class="form-input" id="tarefa-titulo" placeholder="Ex: Implementar endpoint de busca" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Descrição</label>
+            <textarea class="form-textarea" id="tarefa-desc" placeholder="Opcional..."></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+                <label class="form-label">Prioridade</label>
+                <select class="form-select" id="tarefa-prioridade">
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Prazo</label>
+                <input class="form-input" type="date" id="tarefa-prazo" />
+            </div>
+        </div>
+        <input type="hidden" id="tarefa-lista-id" />
+        <input type="hidden" id="tarefa-id" />
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="fecharModal('modal-tarefa')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarTarefa()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DETALHE TAREFA -->
+<div class="modal-overlay" id="modal-detalhe">
+    <div class="modal" style="width:480px">
+        <div id="detalhe-content"></div>
+        <div class="modal-footer" id="detalhe-footer"></div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:8080/api';
+    let quadroAtual = null;
+    let editandoQuadroId = null;
+    let filtrosAtivos = false;
+    const CORES = ['#5b6ef5','#3ecf6e','#f59e0b','#f06060','#a78bfa','#38bdf8','#fb923c'];
+
+    // ── UTILS ──
+    const $ = id => document.getElementById(id);
+    function toast(msg, tipo = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast toast-${tipo}`;
+      t.innerHTML = `<div class="toast-dot"></div>${msg}`;
+      $('toast-container').appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+    function fecharModal(id) { $(id).classList.remove('open'); }
+    function abrirModal(id) { $(id).classList.add('open'); }
+
+    document.querySelectorAll('.modal-overlay').forEach(m =>
+      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); })
+    );
+
+    // ── FILTROS ──
+    function abrirFiltros() {
+      filtrosAtivos = !filtrosAtivos;
+      $('filter-bar').style.display = filtrosAtivos ? 'flex' : 'none';
+    }
+    function limparFiltros() {
+      $('search-input').value = '';
+      $('filtro-prioridade').value = '';
+      $('filtro-status').value = '';
+      carregarBoard(quadroAtual);
+    }
+    async function aplicarFiltros() {
+      const palavra = $('search-input').value.trim();
+      const prioridade = $('filtro-prioridade').value;
+      const status = $('filtro-status').value;
+
+      if (!palavra && !prioridade && !status) { carregarBoard(quadroAtual); return; }
+
+      let url = '';
+      if (palavra) url = `${API}/tarefas/buscar?palavra=${encodeURIComponent(palavra)}&tamanho=50`;
+      else if (prioridade && status !== '') url = `${API}/tarefas/filtrar/prioridade?prioridade=${prioridade}&tamanho=50`;
+      else if (prioridade) url = `${API}/tarefas/filtrar/prioridade?prioridade=${prioridade}&tamanho=50`;
+      else if (status !== '') url = `${API}/tarefas/filtrar/status?concluida=${status}&tamanho=50`;
+
+      if (!url) return;
+      const res = await fetch(url).then(r => r.json()).catch(() => null);
+      if (!res) return;
+
+      const board = $('board-area');
+      board.innerHTML = '';
+      const col = criarColFiltro(res.content || []);
+      board.appendChild(col);
+    }
+
+    function criarColFiltro(tarefas) {
+      const col = document.createElement('div');
+      col.className = 'lista-col';
+      col.style.minHeight = '200px';
+      col.innerHTML = `
+        <div class="lista-header">
+          <div class="lista-title">
+            Resultados
+            <span class="lista-badge">${tarefas.length}</span>
+          </div>
+        </div>
+        <div class="tarefas-list" id="col-filtro"></div>`;
+      const list = col.querySelector('#col-filtro');
+      if (!tarefas.length) {
+        list.innerHTML = `<div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          Nenhuma tarefa encontrada
+        </div>`;
+      } else {
+        tarefas.forEach(t => list.appendChild(criarTarefaCard(t, null)));
+      }
+      return col;
+    }
+
+    // ── QUADROS ──
+    async function carregarQuadros() {
+      const res = await fetch(`${API}/quadros?tamanho=50`).then(r => r.json()).catch(() => null);
+      if (!res) { toast('Erro ao conectar na API. Inicie o servidor Spring Boot.', 'error'); return; }
+      const quadros = res.content || [];
+      const list = $('quadro-list');
+      list.innerHTML = '';
+      quadros.forEach((q, i) => {
+        const el = document.createElement('div');
+        el.className = 'board-item' + (q.id === quadroAtual ? ' active' : '');
+        el.innerHTML = `
+          <div class="board-dot" style="background:${CORES[i % CORES.length]}"></div>
+          <span class="board-nome">${q.nome}</span>
+          <div class="board-item-actions">
+            <button class="icon-btn" title="Renomear" onclick="event.stopPropagation(); abrirModalQuadro(${q.id}, '${q.nome.replace(/'/g,"\\'")}', '${(q.descricao||'').replace(/'/g,"\\'")}')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="icon-btn icon-btn-danger" title="Apagar quadro" onclick="event.stopPropagation(); deletarQuadro(${q.id}, '${q.nome.replace(/'/g,"\\'")}')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            </button>
+          </div>`;
+        el.onclick = () => { quadroAtual = q.id; carregarBoard(q.id); atualizarSidebar(q.id); };
+        list.appendChild(el);
+      });
+      if (quadros.length && !quadroAtual) {
+        quadroAtual = quadros[0].id;
+        atualizarSidebar(quadros[0].id);
+        carregarBoard(quadros[0].id);
+      }
+    }
+
+    function atualizarSidebar(id) {
+      document.querySelectorAll('.board-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.board-item').forEach(el => {
+        if (el.querySelector('.board-dot')) {
+          el.addEventListener('click', () => {});
+        }
+      });
+      const items = $('quadro-list').querySelectorAll('.board-item');
+      items.forEach(el => { if (el.onclick) { /* handled */ } });
+      carregarQuadros();
+    }
+
+    function abrirModalQuadro(id = null, nome = '', desc = '') {
+      editandoQuadroId = id;
+      $('modal-quadro-title').textContent = id ? 'Editar quadro' : 'Novo quadro';
+      $('quadro-nome').value = nome;
+      $('quadro-desc').value = desc;
+      abrirModal('modal-quadro');
+      setTimeout(() => $('quadro-nome').focus(), 100);
+    }
+
+    async function deletarQuadro(id, nome) {
+      if (!confirm(`Apagar o quadro "${nome}" e todas as suas listas e tarefas?`)) return;
+      const res = await fetch(`${API}/quadros/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast('Quadro apagado!');
+        if (quadroAtual === id) {
+          quadroAtual = null;
+          $('board-area').innerHTML = '';
+        }
+        await carregarQuadros();
+      } else { toast('Erro ao apagar quadro', 'error'); }
+    }
+
+    async function salvarQuadro() {
+      const nome = $('quadro-nome').value.trim();
+      if (!nome) { toast('Nome é obrigatório', 'error'); return; }
+      const body = { nome, descricao: $('quadro-desc').value };
+      const url = editandoQuadroId ? `${API}/quadros/${editandoQuadroId}` : `${API}/quadros`;
+      const method = editandoQuadroId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (res.ok) {
+        fecharModal('modal-quadro');
+        toast(editandoQuadroId ? 'Quadro atualizado!' : 'Quadro criado!');
+        await carregarQuadros();
+        if (!editandoQuadroId) {
+          const data = await res.json();
+          quadroAtual = data.id;
+          carregarBoard(data.id);
+        } else {
+          carregarBoard(quadroAtual);
+        }
+      } else { toast('Erro ao salvar quadro', 'error'); }
+    }
+
+    // ── BOARD ──
+    async function carregarBoard(quadroId) {
+      if (!quadroId) return;
+      quadroAtual = quadroId;
+      const board = $('board-area');
+      board.innerHTML = '<div class="spinner"></div>';
+
+      const listas = await fetch(`${API}/listas/quadro/${quadroId}`).then(r => r.json()).catch(() => []);
+      board.innerHTML = '';
+
+      if (!listas.length) {
+        const vazio = document.createElement('div');
+        vazio.className = 'empty-state';
+        vazio.style.margin = 'auto';
+        vazio.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2"/></svg>
+        <div style="margin-top:8px">Nenhuma lista ainda.<br>Crie a primeira!</div>`;
+        board.appendChild(vazio);
+      } else {
+        listas.forEach(l => board.appendChild(criarListaCol(l)));
+      }
+
+      const addCol = document.createElement('div');
+      addCol.className = 'nova-lista-col';
+      addCol.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>Nova lista`;
+      addCol.onclick = () => abrirModalLista(quadroId, listas.length + 1);
+      board.appendChild(addCol);
+    }
+
+    function criarListaCol(lista) {
+      const col = document.createElement('div');
+      col.className = 'lista-col';
+      col.innerHTML = `
+        <div class="lista-header">
+          <div class="lista-title">
+            ${lista.nome}
+            <span class="lista-badge">${lista.tarefas?.length || 0}</span>
+          </div>
+          <div class="lista-actions">
+            <button class="icon-btn" title="Deletar lista" onclick="deletarLista(${lista.id})">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="tarefas-list" id="lista-${lista.id}"></div>
+        <div class="lista-footer">
+          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="abrirModalTarefa(${lista.id})">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="width:12px;height:12px"><path d="M12 5v14M5 12h14"/></svg>
+            Adicionar tarefa
+          </button>
+        </div>`;
+
+      const listEl = col.querySelector(`#lista-${lista.id}`);
+      if (!lista.tarefas || !lista.tarefas.length) {
+        listEl.innerHTML = `<div class="empty-state" style="padding:20px 8px">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2"/></svg>
+          <div>Sem tarefas</div>
+        </div>`;
+      } else {
+        lista.tarefas.forEach(t => listEl.appendChild(criarTarefaCard(t, lista.id)));
+      }
+      return col;
+    }
+
+    function criarTarefaCard(tarefa, listaId) {
+      const card = document.createElement('div');
+      card.className = 'tarefa-card' + (tarefa.concluida ? ' concluida' : '');
+
+      const hoje = new Date().toISOString().split('T')[0];
+      const atrasado = tarefa.prazo && tarefa.prazo < hoje && !tarefa.concluida;
+
+      card.innerHTML = `
+        <div class="prioridade-bar ${tarefa.prioridade}"></div>
+        <div class="tarefa-titulo">${tarefa.titulo}</div>
+        ${tarefa.descricao ? `<div class="tarefa-desc">${tarefa.descricao}</div>` : ''}
+        <div class="tarefa-footer">
+          <div class="tarefa-tags">
+            <span class="tag tag-${tarefa.prioridade}">${tarefa.prioridade}</span>
+            ${tarefa.concluida ? '<span class="tag tag-done">✓ Concluída</span>' : ''}
+          </div>
+          ${tarefa.prazo ? `<div class="prazo ${atrasado ? 'atrasado' : ''}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            ${tarefa.prazo}
+          </div>` : ''}
+        </div>`;
+
+      card.onclick = () => abrirDetalhe(tarefa, listaId);
+      return card;
+    }
+
+    // ── DETALHE TAREFA ──
+    function abrirDetalhe(tarefa, listaId) {
+      const c = $('detalhe-content');
+      const hoje = new Date().toISOString().split('T')[0];
+      const atrasado = tarefa.prazo && tarefa.prazo < hoje && !tarefa.concluida;
+
+      c.innerHTML = `
+        <div class="modal-title">${tarefa.titulo}</div>
+        <div class="detail-meta">
+          <span class="tag tag-${tarefa.prioridade}">${tarefa.prioridade}</span>
+          ${tarefa.concluida ? '<span class="tag tag-done">✓ Concluída</span>' : ''}
+          ${atrasado ? '<span class="tag" style="background:var(--red-lo);color:var(--red)">Atrasada</span>' : ''}
+        </div>
+        ${tarefa.descricao ? `<div class="detail-desc">${tarefa.descricao}</div>` : ''}
+        <div class="detail-row">
+          <span class="detail-key">Lista</span>
+          <span>${tarefa.nomeLista || '—'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Prazo</span>
+          <span>${tarefa.prazo || '—'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Criada em</span>
+          <span>${tarefa.criadaEm ? tarefa.criadaEm.split('T')[0] : '—'}</span>
+        </div>`;
+
+      const f = $('detalhe-footer');
+      f.innerHTML = '';
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn btn-danger btn-sm';
+      btnDel.textContent = 'Deletar';
+      btnDel.onclick = async () => {
+        await fetch(`${API}/tarefas/${tarefa.id}`, { method: 'DELETE' });
+        fecharModal('modal-detalhe');
+        toast('Tarefa deletada');
+        carregarBoard(quadroAtual);
+      };
+
+      if (!tarefa.concluida) {
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn btn-ghost btn-sm';
+        btnEdit.textContent = 'Editar';
+        btnEdit.onclick = () => {
+          fecharModal('modal-detalhe');
+          abrirModalTarefa(listaId || tarefa.listaId, tarefa);
+        };
+        f.appendChild(btnEdit);
+
+        const btnConcluir = document.createElement('button');
+        btnConcluir.className = 'btn btn-primary btn-sm';
+        btnConcluir.textContent = 'Marcar concluída';
+        btnConcluir.onclick = async () => {
+          await fetch(`${API}/tarefas/${tarefa.id}/concluir`, { method: 'PATCH' });
+          fecharModal('modal-detalhe');
+          toast('Tarefa concluída!');
+          carregarBoard(quadroAtual);
+        };
+        f.appendChild(btnConcluir);
+      } else {
+        const btnReabrir = document.createElement('button');
+        btnReabrir.className = 'btn btn-ghost btn-sm';
+        btnReabrir.textContent = 'Reabrir';
+        btnReabrir.onclick = async () => {
+          await fetch(`${API}/tarefas/${tarefa.id}/reabrir`, { method: 'PATCH' });
+          fecharModal('modal-detalhe');
+          toast('Tarefa reaberta');
+          carregarBoard(quadroAtual);
+        };
+        f.appendChild(btnReabrir);
+      }
+
+      f.insertBefore(btnDel, f.firstChild);
+      abrirModal('modal-detalhe');
+    }
+
+    // ── LISTAS ──
+    function abrirModalLista(quadroId, posicao = 1) {
+      $('lista-quadro-id').value = quadroId;
+      $('lista-nome').value = '';
+      $('lista-posicao').value = posicao;
+      abrirModal('modal-lista');
+      setTimeout(() => $('lista-nome').focus(), 100);
+    }
+
+    async function salvarLista() {
+      const nome = $('lista-nome').value.trim();
+      if (!nome) { toast('Nome é obrigatório', 'error'); return; }
+      const body = {
+        nome,
+        posicao: parseInt($('lista-posicao').value) || 1,
+        quadroId: parseInt($('lista-quadro-id').value)
+      };
+      const res = await fetch(`${API}/listas`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (res.ok) {
+        fecharModal('modal-lista');
+        toast('Lista criada!');
+        carregarBoard(quadroAtual);
+      } else { toast('Erro ao criar lista', 'error'); }
+    }
+
+    async function deletarLista(id) {
+      if (!confirm('Deletar esta lista e todas as suas tarefas?')) return;
+      const res = await fetch(`${API}/listas/${id}`, { method: 'DELETE' });
+      if (res.ok) { toast('Lista removida'); carregarBoard(quadroAtual); }
+      else { toast('Erro ao deletar lista', 'error'); }
+    }
+
+    // ── TAREFAS ──
+    function abrirModalTarefa(listaId, tarefa = null) {
+      $('tarefa-lista-id').value = listaId;
+      $('tarefa-id').value = tarefa?.id || '';
+      $('modal-tarefa-title').textContent = tarefa ? 'Editar tarefa' : 'Nova tarefa';
+      $('tarefa-titulo').value = tarefa?.titulo || '';
+      $('tarefa-desc').value = tarefa?.descricao || '';
+      $('tarefa-prioridade').value = tarefa?.prioridade || 'MEDIA';
+      $('tarefa-prazo').value = tarefa?.prazo || '';
+      abrirModal('modal-tarefa');
+      setTimeout(() => $('tarefa-titulo').focus(), 100);
+    }
+
+    async function salvarTarefa() {
+      const titulo = $('tarefa-titulo').value.trim();
+      if (!titulo) { toast('Título é obrigatório', 'error'); return; }
+      const id = $('tarefa-id').value;
+      const body = {
+        titulo,
+        descricao: $('tarefa-desc').value,
+        prioridade: $('tarefa-prioridade').value,
+        prazo: $('tarefa-prazo').value || null,
+        listaId: parseInt($('tarefa-lista-id').value)
+      };
+      const url = id ? `${API}/tarefas/${id}` : `${API}/tarefas`;
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (res.ok) {
+        fecharModal('modal-tarefa');
+        toast(id ? 'Tarefa atualizada!' : 'Tarefa criada!');
+        carregarBoard(quadroAtual);
+      } else { toast('Erro ao salvar tarefa', 'error'); }
+    }
+
+    // ── ATALHOS TECLADO ──
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    });
+
+    // ── INIT ──
+    carregarQuadros();
+</script>
+</body>
+</html>
