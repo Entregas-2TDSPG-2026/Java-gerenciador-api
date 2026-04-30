@@ -1,6 +1,7 @@
-package br.com.fiap.gerenciador_tarefas.dto;
+package com.gerenciadortarefas.dto;
 
-import br.com.fiap.gerenciador_tarefas.models.Tarefa;
+import com.gerenciadortarefas.models.Tarefa;
+import com.gerenciadortarefas.validation.PrioridadeValida;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,7 +29,8 @@ public class TarefaDTO {
         private String descricao;
 
         @NotNull(message = "A prioridade é obrigatória")
-        private Tarefa.Prioridade prioridade;
+        @PrioridadeValida
+        private String prioridade;
 
         private LocalDate prazo;
 
@@ -44,7 +46,7 @@ public class TarefaDTO {
         private Long id;
         private String titulo;
         private String descricao;
-        private Tarefa.Prioridade prioridade;
+        private String prioridade;
         private LocalDate prazo;
         private boolean concluida;
         private LocalDateTime criadaEm;
@@ -56,12 +58,34 @@ public class TarefaDTO {
                     .id(tarefa.getId())
                     .titulo(tarefa.getTitulo())
                     .descricao(tarefa.getDescricao())
-                    .prioridade(tarefa.getPrioridade())
+                    .prioridade(tarefa.getPrioridade() != null ? tarefa.getPrioridade().name() : null)
                     .prazo(tarefa.getPrazo())
                     .concluida(tarefa.isConcluida())
                     .criadaEm(tarefa.getCriadaEm())
                     .listaId(tarefa.getLista().getId())
                     .nomeLista(tarefa.getLista().getNome())
+                    .build();
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Resumo {
+        private Long id;
+        private String titulo;
+        private String prioridade;
+        private boolean concluida;
+        private LocalDate prazo;
+
+        public static Resumo fromEntity(Tarefa tarefa) {
+            return Resumo.builder()
+                    .id(tarefa.getId())
+                    .titulo(tarefa.getTitulo())
+                    .prioridade(tarefa.getPrioridade() != null ? tarefa.getPrioridade().name() : null)
+                    .concluida(tarefa.isConcluida())
+                    .prazo(tarefa.getPrazo())
                     .build();
         }
     }
